@@ -57,5 +57,6 @@ q : Quit Game
     - Archers : 7
     - Balloon : 5
     - Dragon : 3
+    - StealthArchers : 5
 - You have to choose the type of troop movement at start of the game.
 - You have to choose the hero after each level.

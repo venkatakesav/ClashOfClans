@@ -7,24 +7,27 @@ barbarians = []
 dragons = []
 balloons = []
 archers = []
+stealth_archers = []
 
 troops_spawned = {
     'barbarian': 0,
     'archer': 0,
     'dragon': 0,
-    'balloon': 0
+    'balloon': 0,
+    'stealth_archer': 0
 }
-
 
 def clearTroops():
     barbarians.clear()
     dragons.clear()
     balloons.clear()
     archers.clear()
+    stealth_archers.clear()
     troops_spawned['barbarian'] = 0
     troops_spawned['dragon'] = 0
     troops_spawned['balloon'] = 0
     troops_spawned['archer'] = 0
+    troops_spawned['stealth_archer'] = 0
 
 
 class Barbarian:
@@ -209,13 +212,11 @@ class Archer:
         self.speed = 1
         self.health = 100
         self.max_health = 100
-        self.attack = 6
+        self.attack = 3
         self.attack_radius = 4
         self.position = position
         self.alive = True
         self.target = None
-        self.invisible = True
-        self.invisible_start_time = time.time()
 
     def isInAttackradius(self,pos):
         r = abs(pos[0] - self.position[0])
@@ -225,16 +226,11 @@ class Archer:
         return False
 
     def move(self, pos, V, type):
-        print("Archer Health: ", self.health)
-        print("Invisible: ", self.invisible)
         if(self.alive == False):
             return
         vmap = V.map
         r = abs(pos[0] - self.position[0])
         c = abs(pos[1] - self.position[1])
-
-        if time.time() - self.invisible_start_time >= 10:
-            self.invisible = False
 
         if(self.isInAttackradius(pos)):
             info = vmap[pos[0]][pos[1]]
@@ -389,6 +385,188 @@ class Archer:
         if self.health > self.max_health:
             self.health = self.max_health
 
+class StealthArcher:
+    def __init__(self, position):
+        self.speed = 1
+        self.health = 100
+        self.max_health = 100
+        self.attack = 6
+        self.attack_radius = 4
+        self.position = position
+        self.alive = True
+        self.target = None
+        self.invisible = True
+        self.invisible_start_time = time.time()
+
+    def isInAttackradius(self,pos):
+        r = abs(pos[0] - self.position[0])
+        c = abs(pos[1] - self.position[1])
+        if(r**2 + c**2 <= self.attack_radius**2):
+            return True
+        return False
+
+    def move(self, pos, V, type):
+        if(self.alive == False):
+            return
+        vmap = V.map
+        r = abs(pos[0] - self.position[0])
+        c = abs(pos[1] - self.position[1])
+
+        if time.time() - self.invisible_start_time >= 10:
+            self.invisible = False
+
+        if(self.isInAttackradius(pos)):
+            info = vmap[pos[0]][pos[1]]
+            if(info == pt.TOWNHALL):
+                self.break_building(pos[0], pos[1], V)
+                return
+            x = int(info.split(':')[1])
+            y = int(info.split(':')[2])
+            self.break_building(x, y, V)
+            return
+        elif type == 1:
+            flag = 0
+            for i in range(self.speed):
+                coords = findPathWithoutWall(V.map, self.position, pos)
+                if(coords == None):
+                    flag = 1
+                    break
+                self.position = coords
+            if(flag == 0):
+                return
+        if(r == 0):
+            if(pos[1] > self.position[1]):
+                for i in range(self.speed):
+                    r = self.position[0]
+                    c = self.position[1] + 1
+                    if(self.check_for_walls(r, c, vmap)):
+                        self.break_wall(r, c, V)
+                        return
+                    self.position[1] += 1
+                    if(self.isInAttackradius(pos)):
+                        break
+            else:
+                for i in range(self.speed):
+                    r = self.position[0]
+                    c = self.position[1] - 1
+                    if(self.check_for_walls(r, c, vmap)):
+                        self.break_wall(r, c, V)
+                        return
+                    self.position[1] -= 1
+                    if(self.isInAttackradius(pos)):
+                        break
+        elif(r > 1):
+            if(pos[0] > self.position[0]):
+                for i in range(self.speed):
+                    r = self.position[0] + 1
+                    c = self.position[1]
+                    if(self.check_for_walls(r, c, vmap)):
+                        self.break_wall(r, c, V)
+                        return
+                    self.position[0] += 1
+                    if(self.position[0] == pos[0] or self.isInAttackradius(pos)):
+                        return
+            else:
+                for i in range(self.speed):
+                    r = self.position[0] - 1
+                    c = self.position[1]
+                    if(self.check_for_walls(r, c, vmap)):
+                        self.break_wall(r, c, V)
+                        return
+                    self.position[0] -= 1
+                    if(self.position[0] == pos[0] or self.isInAttackradius(pos)):
+                        return
+        elif(c > 1):
+            if(pos[1] > self.position[1]):
+                for i in range(self.speed):
+                    r = self.position[0]
+                    c = self.position[1] + 1
+                    if(self.check_for_walls(r, c, vmap)):
+                        self.break_wall(r, c, V)
+                        return
+                    self.position[1] += 1
+                    if(self.position[1] == pos[1] or self.isInAttackradius(pos)):
+                        return
+            else:
+                for i in range(self.speed):
+                    r = self.position[0]
+                    c = self.position[1] - 1
+                    if(self.check_for_walls(r, c, vmap)):
+                        self.break_wall(r, c, V)
+                        return
+                    self.position[1] -= 1
+                    if(self.position[1] == pos[1] or self.isInAttackradius(pos)):
+                        return
+        elif(r+c == 2):
+            if(pos[0] > self.position[0]):
+                for i in range(self.speed):
+                    r = self.position[0] + 1
+                    c = self.position[1]
+                    if(self.check_for_walls(r, c, vmap)):
+                        self.break_wall(r, c, V)
+                        return
+                    self.position[0] += 1
+                    if(self.isInAttackradius(pos)):
+                        break
+            else:
+                for i in range(self.speed):
+                    r = self.position[0] - 1
+                    c = self.position[1]
+                    if(self.check_for_walls(r, c, vmap)):
+                        self.break_wall(r, c, V)
+                        return
+                    self.position[0] -= 1
+                    if(self.isInAttackradius(pos)):
+                        break
+
+    def check_for_walls(self, x, y, vmap):
+        if(vmap[x][y] == pt.WALL):
+            return True
+        return False
+
+    def break_wall(self, x, y, V):
+        target = V.wall_objs[(x, y)]
+        self.attack_target(target)
+
+    def break_building(self, x, y, V):
+        target = None
+        if(V.map[x][y] == pt.TOWNHALL):
+            target = V.town_hall_obj
+        else:
+            all_buildings = collections.ChainMap(
+                V.hut_objs, V.cannon_objs, V.wizard_tower_objs)
+            target = all_buildings[(x, y)]
+        self.attack_target(target)
+
+    def attack_target(self, target):
+        if(self.alive == False):
+            return
+        target.health -= self.attack
+        if target.health <= 0:
+            target.health = 0
+            target.destroy()
+
+    def kill(self):
+        self.alive = False
+        stealth_archers.remove(self)
+
+    def deal_damage(self, hit):
+        if(self.alive == False):
+            return
+        if(self.invisible == False):
+            self.health -= hit
+        if self.health <= 0:
+            self.health = 0
+            self.kill()
+
+    def rage_effect(self):
+        self.speed = self.speed*2
+        self.attack = self.attack*2
+
+    def heal_effect(self):
+        self.health = self.health*1.5
+        if self.health > self.max_health:
+            self.health = self.max_health
 
 class Dragon:
     def __init__(self, position):
@@ -651,6 +829,16 @@ def spawnArcher(pos):
     troops_spawned['archer'] += 1
     archers.append(archer)
 
+def spawnStealthArcher(pos):
+    if(pt.troop_limit['stealth_archer'] <= troops_spawned['stealth_archer']):
+        return
+
+    # convert tuple to list
+    pos = list(pos)
+    sarcher = StealthArcher(pos)
+    troops_spawned['stealth_archer'] += 1
+    stealth_archers.append(sarcher)
+
 def spawnDragon(pos):
     if(pt.troop_limit['dragon'] <= troops_spawned['dragon']):
         return
@@ -715,6 +903,29 @@ def move_archers(V,type):
             if(closest_building == None):
                 continue
             archer.move(closest_building, V, type)
+
+def move_stealth_archers(V, type):
+    if(type == 1):
+        for sarcher in stealth_archers:
+            if(sarcher.alive == False):
+                continue
+            if sarcher.target != None:
+                if(V.map[sarcher.target[0]][sarcher.target[1]] == pt.BLANK):
+                    sarcher.target = None
+            if(sarcher.target == None):
+                sarcher.target = search_for_closest_building(sarcher.position, V.map, 0)
+            if(sarcher.target == None):
+                continue
+            sarcher.move(sarcher.target, V, type)
+    elif(type == 2):
+        for sarcher in stealth_archers:
+            if(sarcher.alive == False):
+                continue
+            closest_building = search_for_closest_building(sarcher.position, V.map, 0)
+            if(closest_building == None):
+                continue
+            sarcher.move(closest_building, V, type)
+
 
 def move_dragons(V):
     for dr in dragons:

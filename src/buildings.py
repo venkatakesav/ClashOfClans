@@ -1,6 +1,6 @@
 import numpy as np
 import points as pt
-from characters import barbarians, dragons, balloons, archers
+from characters import barbarians, dragons, balloons, archers, stealth_archers
 
 
 class Building:
@@ -45,7 +45,7 @@ class Cannon(Building):
     def scan_for_targets(self, King):
         self.isShooting = False
 
-        troops = barbarians + archers
+        troops = barbarians + archers + stealth_archers
         for troop in troops:
             if (troop.position[0] - self.position[0])**2 + (troop.position[1] - self.position[1])**2 <= self.attack_radius**2:
                 self.isShooting = True
@@ -113,7 +113,7 @@ class WizardTower(Building):
 
     def scan_for_targets(self, King):
         self.isShooting = False
-        troops = barbarians+ archers + dragons + balloons
+        troops = barbarians+ archers + dragons + balloons + stealth_archers
         for troop in troops:
             if (troop.position[0] - self.position[0])**2 + (troop.position[1] - self.position[1])**2 <= self.attack_radius**2:
                 self.isShooting = True
@@ -135,7 +135,7 @@ class WizardTower(Building):
             target.deal_damage(self.attack)
         i = target.position[0] - 1
         j = target.position[1] - 1
-        troops = barbarians+ archers + dragons + balloons
+        troops = barbarians+ archers + dragons + balloons + stealth_archers
         for row in range(i, i+3):
             for col in range(j, j+3):
                 if(row < 0 or col < 0):

@@ -22,7 +22,8 @@ troop_limit = {
     'barbarian': 10,
     'dragon': 3,
     'balloon': 5,
-    'archer': 7
+    'archer': 7,
+    'stealth_archer': 5,
 }
 
 
