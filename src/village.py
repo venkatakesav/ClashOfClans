@@ -2,7 +2,7 @@ import numpy as np
 import points as pt
 import buildings as bd
 import collections
-from characters import barbarians, dragons,balloons, archers, stealth_archers
+from characters import barbarians, dragons,balloons, archers, stealth_archers, healers
 
 
 class Village:
@@ -202,11 +202,10 @@ class Village:
                 return 1
             else:
                 return 2
-        elif King.alive == False and len(barbarians) == 0 and len(dragons) == 0 and len(balloons) == 0 and len(archers) == 0 and len(stealth_archers):
+        elif King.alive == False and len(barbarians) == 0 and len(dragons) == 0 and len(balloons) == 0 and len(archers) == 0 and len(stealth_archers) == 0:
             return 3
         else:
             return 0
-
 
 def createVillage(level):
     village = Village(getConfig(level), level)

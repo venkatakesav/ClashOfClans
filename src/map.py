@@ -4,7 +4,7 @@ init(autoreset=True)
 import points as pt
 import numpy as np
 import datetime
-from characters import barbarians, dragons, balloons, archers, stealth_archers
+from characters import barbarians, dragons, balloons, archers, stealth_archers, healers
 
 # 50 - 100 : cyan
 # 20 - 50 : yellow
@@ -59,8 +59,6 @@ def barbColor(barb):
     else:
         return Back.WHITE
 
-
-
 def drColor(dr):
     health = dr.health
     max_health = dr.max_health
@@ -104,9 +102,18 @@ def blColor(bl):
         return Back.BLUE
     else:
         return Back.WHITE
+
+def hlColor(hl):
+    health = hl.health
+    max_health = hl.max_health
+    percentage = (health*100)/max_health
+    if(percentage > 50):
+        return Back.MAGENTA
+    elif percentage > 20:
+        return Back.BLUE
+    else:
+        return Back.WHITE 
         
-
-
 def printMap(V):
     map = np.copy(V.map)
     map_matrix = np.empty((pt.config['dimensions'][0]*2,pt.config['dimensions'][1]*2), dtype=object)
@@ -305,7 +312,13 @@ def printMap(V):
         map_matrix[a][b+1] = blColor(bl) + Fore.BLACK + 'LL'
         map_matrix[a+1][b+1] = blColor(bl) + Fore.BLACK + 'N '
 
-
+    for hl in healers:
+        a= 2*hl.position[0]
+        b = 2*hl.position[1]
+        map_matrix[a][b] = hlColor(hl) + Fore.BLACK + 'HE'
+        map_matrix[a+1][b] = hlColor(hl) + Fore.BLACK + 'ER'
+        map_matrix[a][b+1] = hlColor(hl) + Fore.BLACK + 'AL'
+        map_matrix[a+1][b+1] = hlColor(hl) + Fore.BLACK + '  '
 
     store_replay(map_matrix)
     store_level(V.level)
@@ -317,7 +330,6 @@ def printMap(V):
         print('')
     print('Level: ' + str(V.level), end='')
 
-    
 
 def showKingHealth(health):
     health_bar = []
@@ -333,8 +345,6 @@ def showKingHealth(health):
 def update_map(map):
     map_mat = printMap(map)
     return map_mat
-
-
 
 def store_replay(map_matrix):
     # create a file name
