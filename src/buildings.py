@@ -4,6 +4,9 @@ from characters import barbarians, dragons, balloons, archers, stealth_archers
 
 
 class Building:
+    def __init__(self):
+        self.level = 4
+
     def destroy(self):
         self.destroyed = True
         if self.type == 'wall':
@@ -31,15 +34,16 @@ class Hut(Building):
 
 class Cannon(Building):
     def __init__(self, position, V):
+        super().__init__()
         self.position = position
         self.dimensions = (2, 2)
         self.V = V
         self.destroyed = False
-        self.health = 60
-        self.max_health = 60
+        self.health = 60 + 30*self.level
+        self.max_health = 60 + 30*self.level
         self.type = 'cannon'
-        self.attack = 5
-        self.attack_radius = 5
+        self.attack = 0
+        self.attack_radius = 5 + self.level/2
         self.isShooting = False
 
     def scan_for_targets(self, King):
@@ -67,6 +71,7 @@ class Cannon(Building):
 
 class Wall(Building):
     def __init__(self, position, V):
+        super().__init__()
         self.position = position
         self.dimensions = (1, 1)
         self.V = V
@@ -74,6 +79,12 @@ class Wall(Building):
         self.health = 20
         self.max_health = 20
         self.type = 'wall'
+    def destroy_wall(self):
+        if(self.level >= 3):
+            troops = barbarians + archers + stealth_archers
+            for troop in troops:
+                if abs(troop.position[0] - self.position[0]) + abs(troop.position[1] - self.position[1]) <= 2:
+                    troop.deal_damage(200)
 
 
 class TownHall(Building):
@@ -89,15 +100,16 @@ class TownHall(Building):
 
 class WizardTower(Building):
     def __init__(self, position, V):
+        super().__init__()
         self.position = position
         self.dimensions = (1, 1)
         self.V = V
         self.destroyed = False
-        self.health = 60
-        self.max_health = 60
+        self.health = 60 + 30*self.level
+        self.max_health = 60 + 30*self.level
         self.type = 'wizardtower'
-        self.attack = 5
-        self.attack_radius = 5
+        self.attack = 4 + self.level
+        self.attack_radius = 5 + self.level/2
         self.isShooting = False
 
     def scan_for_targets(self, King):

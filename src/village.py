@@ -133,6 +133,7 @@ class Village:
     def remove_wall(self, wall_obj):
         self.wall_objs.pop(wall_obj.position)
         self.map[wall_obj.position[0]][wall_obj.position[1]] = pt.BLANK
+        wall_obj.destroy_wall()
 
     def remove_town_hall(self, town_hall_obj):
         self.town_hall_obj = None
