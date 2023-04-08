@@ -42,7 +42,7 @@ class Cannon(Building):
         self.health = 60 + 30*self.level
         self.max_health = 60 + 30*self.level
         self.type = 'cannon'
-        self.attack = 0
+        self.attack = 4 + self.level
         self.attack_radius = 5 + self.level/2
         self.isShooting = False
 
